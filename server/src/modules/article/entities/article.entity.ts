@@ -30,6 +30,9 @@ export class Article {
 
     @Prop()
     img?: string;
+
+    @Prop({ type: String, default: null, index: true })
+    oldId?: string;
 }
 
 export type ArticleDocument = HydratedDocument<Article>;

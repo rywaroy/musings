@@ -4,7 +4,7 @@ import {
     NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import xss from 'xss';
 import { Article, ArticleDocument } from './entities/article.entity';
 import { Tag, TagDocument } from './entities/tag.entity';
@@ -74,14 +74,29 @@ export class ArticleService {
     }
 
     async getArticleDetail(id: string) {
-        const article = await this.articleModel
-            .findOneAndUpdate(
-                { _id: id, state: 1 },
-                { $inc: { watch: 1 } },
-                { new: true },
-            )
-            .populate({ path: 'tagid', select: 'title color state' })
-            .lean();
+        const isObjectId = Types.ObjectId.isValid(id);
+
+        let article = isObjectId
+            ? await this.articleModel
+                  .findOneAndUpdate(
+                      { _id: id, state: 1 },
+                      { $inc: { watch: 1 } },
+                      { new: true },
+                  )
+                  .populate({ path: 'tagid', select: 'title color state' })
+                  .lean()
+            : null;
+
+        if (!article) {
+            article = await this.articleModel
+                .findOneAndUpdate(
+                    { oldId: id, state: 1 },
+                    { $inc: { watch: 1 } },
+                    { new: true },
+                )
+                .populate({ path: 'tagid', select: 'title color state' })
+                .lean();
+        }
 
         if (!article) {
             throw new NotFoundException('文章不存在或已删除');

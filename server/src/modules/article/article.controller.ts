@@ -48,7 +48,7 @@ export class ArticleController {
     }
 
     @Get(':id')
-    getArticle(@Param('id', MongoIdPipe) id: string) {
+    getArticle(@Param('id') id: string) {
         return this.articleService.getArticleDetail(id);
     }
 
